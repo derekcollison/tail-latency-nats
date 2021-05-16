@@ -1,0 +1,39 @@
+[package]
+name = "tail-latency-nats"
+authors = ["Derek Collison <derek@nats.io>"]
+repository = "https://github.com/derekcollison/tail-latency-nats"
+version = "0.1.0"
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+nats = "0.9.16"
+quicli = "0.4.0"
+historian = "4.0"
+lazy_static = "1.4"
+rand_distr = "0.4.0"
+rand = "0.8.3"
+#crossbeam-channel = "0.5.0"
+#crossbeam-utils = "0.8.4"
+spinners = "1.2.0"
+#plotlib = "0.5.1"
+structopt = { version = "0.3", default-features = false }
+crossterm = "0.19"
+tui = { version = "0.14.0", features = ["crossterm"], default-features = false }
+
+[profile.release]
+lto = true
+opt-level = 'z'  # Optimize for size.
+codegen-units = 1
+debug = false
+panic = "abort"
+
+# make debug build as fast as release
+# usage of utf8 encoding inside tui
+# makes their debug profile slow
+[profile.dev.package."tui"]
+opt-level = 3
+
+[profile.dev]
+split-debuginfo = "unpacked"
+panic = "abort"
