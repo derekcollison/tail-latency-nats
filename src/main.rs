@@ -94,8 +94,7 @@ fn main() -> io::Result<()> {
     let mut terminal = Terminal::new(CrosstermBackend::new(io::stdout()))?;
     terminal.hide_cursor()?;
     let num_reqs = args.num_requests.get();
-    let sp =
-        Spinner::new(Spinners::Dots9, format!("Sending {} requests", num_reqs));
+    let sp = Spinner::new(Spinners::Dots9, format!("Sending {} requests", num_reqs));
 
     for _ in 0..num_reqs {
         let start = Instant::now();
