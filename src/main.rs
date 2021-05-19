@@ -40,12 +40,12 @@ struct Args {
 const DELAYS: [(u64, u64); 5] = [(5, 65), (10, 25), (15, 4), (50, 3), (100, 3)];
 
 lazy_static::lazy_static! {
-    static ref HISTOGRAM: Histo = Default::default();
     static ref DIST: WeightedAliasIndex<u64> = WeightedAliasIndex::new(DELAYS.iter().map(|item| item.1).collect()).unwrap();
 }
 
 fn main() -> io::Result<()> {
     let args = Args::from_args();
+    let mut histogram: Histo = Default::default();
 
     // Connect to the NATS network.
     // This is like your computer connecting to WiFi or your phone connecting to the cellular network.
@@ -94,12 +94,13 @@ fn main() -> io::Result<()> {
     let mut terminal = Terminal::new(CrosstermBackend::new(io::stdout()))?;
     terminal.hide_cursor()?;
     let num_reqs = args.num_requests.get();
-    let sp = Spinner::new(Spinners::Dots9, format!("Sending {} requests", num_reqs));
+    let sp =
+        Spinner::new(Spinners::Dots9, format!("Sending {} requests", num_reqs));
 
     for _ in 0..num_reqs {
         let start = Instant::now();
         nc.request(&svc_addr, "Hello World")?;
-        HISTOGRAM.measure(calc_elapsed(start) as f64);
+        histogram.measure(calc_elapsed(start) as f64);
     }
 
     sp.stop();
@@ -107,13 +108,13 @@ fn main() -> io::Result<()> {
 
     // Gather the results.
     let mut data: Vec<(&str, u64)> = Vec::new();
-    data.push(("  min", HISTOGRAM.percentile(0.0) as u64));
+    data.push(("  min", histogram.percentile(0.0) as u64));
     for pctl in &[50., 75., 90., 95., 99.0] {
-        let p = HISTOGRAM.percentile(*pctl);
+        let p = histogram.percentile(*pctl);
         let l = format!("{:4}th", pctl);
         data.push((Box::leak(l.into_boxed_str()), p as u64));
     }
-    data.push(("  max", HISTOGRAM.percentile(100.0) as u64));
+    data.push(("  max", histogram.percentile(100.0) as u64));
 
     let barchart = BarChart::default()
         .block(Block::default().title(" Latency(ms)").borders(Borders::ALL))

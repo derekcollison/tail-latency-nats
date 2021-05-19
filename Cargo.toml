@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 nats = "0.9.16"
 quicli = "0.4.0"
-historian = "4.0"
+historian = { version = "4.0", features = ["single_threaded"] }
 lazy_static = "1.4"
 rand_distr = "0.4.0"
 rand = "0.8.3"
